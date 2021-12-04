@@ -20,6 +20,9 @@ public class Player extends Sprite implements KeyListener {
 		super(initScene, initLevel, initX, initY);
 		// give the player gravity
 		hasGravity = false;
+		gravityDirState = Sprite.GRAV_BOTTOM;
+		collisionType = Sprite.COL_PLAYER;
+		verticalState = Sprite.FALLING;
 		
 		// create the keyListener
 		scene.addKeyListener(this);
@@ -34,6 +37,7 @@ public class Player extends Sprite implements KeyListener {
 		hasGravity = true;
 		
 		gravityDirState = Sprite.GRAV_BOTTOM;
+		collisionType = Sprite.COL_PLAYER;
 		verticalState = Sprite.FALLING;
 		// create the keyListener
 		scene.addKeyListener(this);
@@ -59,6 +63,8 @@ public class Player extends Sprite implements KeyListener {
 		
 		// update and handle collisions
 		updateCollision();
+		
+		// determine if player should be falling
 		if (gravityDirState == Sprite.GRAV_BOTTOM) {
 			if (!(collisionInfo.containsValue(Sprite.COL_DIR_BOTTOM))) {
 				verticalState = Sprite.FALLING;
@@ -105,7 +111,7 @@ public class Player extends Sprite implements KeyListener {
 			if (horizontalState == Sprite.POSITIVE_MOTION) {
 				dx = 5;
 			}
-		}
+		} 
 		if (gravityDirState == Sprite.GRAV_LEFT) {
 			dy = 0;
 			if (horizontalState == Sprite.JUMP) {
@@ -126,7 +132,7 @@ public class Player extends Sprite implements KeyListener {
 			if (verticalState == Sprite.POSITIVE_MOTION) {
 				dy = 5;
 			}
-		}
+		} 
 		if (gravityDirState == Sprite.GRAV_TOP) {
 			dx = 0;
 			if (verticalState == Sprite.JUMP) {
@@ -147,7 +153,7 @@ public class Player extends Sprite implements KeyListener {
 			if (horizontalState == Sprite.POSITIVE_MOTION) {
 				dx = 5;
 			}
-		}
+		} 
 		if (gravityDirState == Sprite.GRAV_RIGHT) {
 			dy = 0;
 			if (horizontalState == Sprite.JUMP) {
@@ -173,29 +179,37 @@ public class Player extends Sprite implements KeyListener {
 	
 	// handleCollisionWith method
 	public void handleCollisionWith(Sprite s, int collisionDir) {
-		if (collisionDir == Sprite.COL_DIR_LEFT) {
-			x = s.getX() + s.getWidth();
-			if (gravityDirState == Sprite.GRAV_LEFT) {
-				horizontalState = Sprite.LANDED;
+		if (s.getCollisionType() == Sprite.COL_HALT) { // for collisions that should stop the player
+			if (collisionDir == Sprite.COL_DIR_LEFT) {
+				x = s.getX() + s.getWidth();
+				if (gravityDirState == Sprite.GRAV_LEFT) {
+					horizontalState = Sprite.LANDED;
+				}
+			} else if (collisionDir == Sprite.COL_DIR_TOP) {
+				y = s.getY() + s.getHeight();
+				if (gravityDirState == Sprite.GRAV_TOP) {
+					verticalState = Sprite.LANDED;
+				}
+			} else if (collisionDir == Sprite.COL_DIR_RIGHT) {
+				x = s.getX() - width;
+				if (gravityDirState == Sprite.GRAV_RIGHT) {
+					horizontalState = Sprite.LANDED;
+				}
+			} else if (collisionDir == Sprite.COL_DIR_BOTTOM) {
+				y = s.getY() - height;
+				if (gravityDirState == Sprite.GRAV_BOTTOM) {
+					verticalState = Sprite.LANDED;
+				}
 			}
 		}
-		if (collisionDir == Sprite.COL_DIR_TOP) {
-			y = s.getY() + s.getHeight();
-			if (gravityDirState == Sprite.GRAV_TOP) {
-				verticalState = Sprite.LANDED;
-			}
+		
+		if (s.getCollisionType() == Sprite.COL_KILL_OTHER) { // for collisions that should kill the player
+			level.setLives(level.getLives() - 1);
+			level.resetLevel();
 		}
-		if (collisionDir == Sprite.COL_DIR_RIGHT) {
-			x = s.getX() - width;
-			if (gravityDirState == Sprite.GRAV_RIGHT) {
-				horizontalState = Sprite.LANDED;
-			}
-		}
-		if (collisionDir == Sprite.COL_DIR_BOTTOM) {
-			y = s.getY() - height;
-			if (gravityDirState == Sprite.GRAV_BOTTOM) {
-				verticalState = Sprite.LANDED;
-			}
+		
+		if (s.getCollisionType() == Sprite.COL_KILL_SELF) {
+			s.setVisible(false);
 		}
 	}
 	
@@ -230,7 +244,7 @@ public class Player extends Sprite implements KeyListener {
 				horizontalState = Sprite.NEGATIVE_MOTION;
 			}
 			if (gravityDirState == Sprite.GRAV_RIGHT) {
-				verticalState = Sprite.POSITIVE_MOTION;
+				verticalState = Sprite.NEGATIVE_MOTION;
 			}
 			
 		}
@@ -245,7 +259,7 @@ public class Player extends Sprite implements KeyListener {
 				horizontalState = Sprite.POSITIVE_MOTION;
 			}
 			if (gravityDirState == Sprite.GRAV_RIGHT) {
-				verticalState = Sprite.NEGATIVE_MOTION; 
+				verticalState = Sprite.POSITIVE_MOTION; 
 			}
 		}
 		// if the player has gravity, then use jump instead of the w an s keys to move up and down
@@ -325,7 +339,7 @@ public class Player extends Sprite implements KeyListener {
 				}
 			}
 			if (gravityDirState == Sprite.GRAV_RIGHT) {
-				if (verticalState != Sprite.NEGATIVE_MOTION) {
+				if (verticalState != Sprite.POSITIVE_MOTION) {
 					verticalState = Sprite.STATIONARY;
 				}
 			}
@@ -348,7 +362,7 @@ public class Player extends Sprite implements KeyListener {
 				}
 			}
 			if (gravityDirState == Sprite.GRAV_RIGHT) {
-				if (verticalState != Sprite.POSITIVE_MOTION) {
+				if (verticalState != Sprite.NEGATIVE_MOTION) {
 					verticalState = Sprite.STATIONARY;
 				}
 			}

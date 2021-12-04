@@ -22,18 +22,19 @@ public class Scene extends JPanel implements ActionListener {
 	// the current level 
 	private Level currentLevel;
 	
+	
 	// constructor
 	public Scene() {
 		// add levels to the game and set the current level to the first level.
+		
 		levelList = new ArrayList<Level>();
-		levelList.add(new Level1(this, "Level 1"));
+		levelList.add(new StartScreen(this, 0, "Start Screen"));
 		currentLevel = levelList.get(0);
 		// allow the jpanel to get focus,
 		// which allows for event listeners to work
-		setPreferredSize(new Dimension(500, 500));
+		setPreferredSize(new Dimension(500, 600));
 		setFocusable(true);
 		requestFocus();
-		
 		// start the timer
 		t.start();
 	}// end constructor

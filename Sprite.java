@@ -24,7 +24,6 @@ public abstract class Sprite {
 	public static final int LANDED = 4;
 	public static final int FALLING = 5;
 	
-
 	// boundAction enumerations
 	public static final int BA_NONE = 0;
 	public static final int BA_STOP = 1;
@@ -35,19 +34,21 @@ public abstract class Sprite {
 	public static final int COL_HALT = 1;
 	public static final int COL_KILL_OTHER = 2;
 	public static final int COL_KILL_SELF = 3;
+	public static final int COL_PLAYER = 4;
+	public static final int COL_NEXT_LEVEL = 5;
 	
 	// collision direction enumerations to be used in collisionInfo
 	public static final int COL_DIR_LEFT = 0;
 	public static final int COL_DIR_TOP = 1;
 	public static final int COL_DIR_RIGHT = 2;
 	public static final int COL_DIR_BOTTOM = 3;
+	public static final int COL_DIR_UNDEF = 4; // undefined collision direction
 	
 	// gravity direction enumeration
 	public static final int GRAV_BOTTOM = 0;
 	public static final int GRAV_LEFT = 1;
 	public static final int GRAV_TOP = 2;
 	public static final int GRAV_RIGHT = 3;
-	
 	
 	//End Enumerations ---------------------------------------------------------------------------------------
 	
@@ -63,12 +64,9 @@ public abstract class Sprite {
 	// collision is coming from.
 	protected HashMap<Sprite, Integer> collisionInfo;
 	
-	
 	protected boolean visible;
 	
 	protected boolean hasGravity;
-	
-	
 	
 	protected Scene scene;
 	protected Level level;
@@ -94,7 +92,6 @@ public abstract class Sprite {
 	
 	protected AffineTransform aftran;
 	
-	
 	// double buffer for the sprite image
 	protected BufferedImage dbImg;
 	protected Graphics2D dbImgG2D;
@@ -104,7 +101,10 @@ public abstract class Sprite {
 	
 	// Constructor for sprite without an image source. Image can be set later
 	// takes in a scene, initial x position, initial y position
-	public Sprite(Scene initScene, Level initLevel, int initX, int initY) {
+	public Sprite(Scene initScene, 
+								Level initLevel, 
+								int initX, 
+								int initY) {
 		// set the scene and level
 		scene = initScene;
 		level = initLevel;
@@ -144,7 +144,11 @@ public abstract class Sprite {
 		collisionInfo = new HashMap<Sprite, Integer>();
 	}// end Constructor 1
 	
-	public Sprite(Scene initScene, Level initLevel, int initX, int initY, String imgSource) {
+	public Sprite(Scene initScene, 
+								Level initLevel, 
+								int initX, 
+								int initY, 
+				  String imgSource) {
 		scene = initScene;
 		level = initLevel;
 		
@@ -302,32 +306,35 @@ public abstract class Sprite {
 			int otherTop = other.getY();
 			int otherBottom = other.getY() + other.getHeight();
 			
-			boolean collisionFound = false;
-			
 			if (other != this) {
 				if (collidesWith(other)) {
+					// check current position and then check previous position
 					if (myBottom >= otherTop) {
-						if (!(myBottom - dy >= otherTop)) {
+						if (!(myBottom - dy >= otherTop)) { // collision direction is below
 							collisionInfo.put(other, Sprite.COL_DIR_BOTTOM);
-						}
+						} 
 					}
 					if (myTop <= otherBottom) {
-						if (!(myTop - dy <= otherBottom)) {
+						if (!(myTop - dy <= otherBottom)) { // collision direction is above
 							collisionInfo.put(other, Sprite.COL_DIR_TOP);
 						}
 					}
 					if (myRight >= otherLeft) {
-						if (!(myRight - dx >= otherLeft)) {
+						if (!(myRight - dx >= otherLeft)) { // collision direction is to the right
 							collisionInfo.put(other, Sprite.COL_DIR_RIGHT);
 						}
-					}
+					} 
 					if (myLeft <= otherRight) {
-						if (!(myLeft - dx <= otherRight)) {
+						if (!(myLeft - dx <= otherRight)) { // collision direction is to the left
 							collisionInfo.put(other, Sprite.COL_DIR_LEFT);
 						}
 					}
 					
-					handleCollisionWith(other, collisionInfo.get(other));
+					if (!(collisionInfo.isEmpty())) {
+						handleCollisionWith(other, collisionInfo.get(other));
+					} else {// if the collision direction is undetermined but a collision still happens, use bottom as default
+						handleCollisionWith(other, Sprite.COL_DIR_BOTTOM); 
+					}
 				} else {
 					if (collisionInfo.containsKey(other)) {
 						collisionInfo.remove(other);
@@ -348,19 +355,22 @@ public abstract class Sprite {
 		dy = (int) Math.round(speed * Math.sin(movementAngle));
 	} // end calcVector
 	
+	// calcSpeedAngle method
 	public void calcSpeedAngle() {
 		speed = Math.sqrt(((double)dx * (double)dx) + 
 								((double)dy * (double)dy));
 		movementAngle = Math.atan2((double)dy, (double)dx);
-	}
+	}// end calcSpeedAngle
 	
+	// addVector method
 	public void addVector(int angle, double thrust) {
 		double radAngle = Math.toRadians(angle);
 		
 		dx += thrust * Math.cos(radAngle);
 		dy += thrust * Math.sin(radAngle);
 		calcSpeedAngle(); 
-	}	
+	}// end addVector	
+
 	// SETTERS
 	
 	// setWidth method
@@ -431,18 +441,36 @@ public abstract class Sprite {
 		imgAngle = Math.toRadians(thetaDegrees);
 	}// end setImgAngle
 	
+	// changeImgAngleBy
 	public void changeImgAngleBy(int thetaDegrees) {
 		imgAngle += Math.toRadians(thetaDegrees); 
-	}
+	}// end changeImgAngleBy
 	
+	// setMovementAngle method
 	public void setMovementAngle(int thetaDegrees) {
 		movementAngle = Math.toRadians(thetaDegrees);
-	}
+	}// end setMovementAngle
 	
+	// changeMovementAngleBy method
 	public void changeMovementAngleBy(int thetaDegrees) {
 		movementAngle += Math.toRadians(thetaDegrees);
 		calcVector();
-	}
+	}// end changeMovementAngleBy
+	
+	// setLevel method
+	public void setLevel(Level l) {
+		level = l;
+	}// end setLevel
+	
+	// setVisible method
+	public void setVisible(boolean toggle) {
+		visible = toggle;
+	}// end setVisible
+	
+	// setCollisionType method
+	public void setCollisionType(int colType) {
+		collisionType = colType;
+	}// end setCollisionType
 	
 	// GETTERS
 	
@@ -484,7 +512,7 @@ public abstract class Sprite {
 	// getSpeed method
 	public double getSpeed() {
 		speed = Math.sqrt(((double)dx * (double)dx) + 
-								((double)dy * (double)dy));
+						  ((double)dy * (double)dy));
 		return speed;
 	}// end getSpeed
 	
