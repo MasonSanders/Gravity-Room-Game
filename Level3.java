@@ -76,7 +76,7 @@ public class Level3 extends Level {
 	
 	// nextLevel method
 	public void nextLevel() {
-		scene.setCurrentLevel(new Level3(scene, numLives, "Level 3"));
+		scene.setCurrentLevel(new StartScreen(scene, numLives, "Start Screen"));
 	}// end nextLevel
 	
 	// resetLevel method
