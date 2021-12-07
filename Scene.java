@@ -16,20 +16,14 @@ public class Scene extends JPanel implements ActionListener {
 	//timer for framerate
 	private Timer t = new Timer(17, this);
 	
-	// list of levels
-	private ArrayList<Level> levelList;
-	
 	// the current level 
 	private Level currentLevel;
 	
 	
 	// constructor
 	public Scene() {
-		// add levels to the game and set the current level to the first level.
-		
-		levelList = new ArrayList<Level>();
-		levelList.add(new StartScreen(this, 0, "Start Screen"));
-		currentLevel = levelList.get(0);
+		// set the initial level to a new startscreen
+		currentLevel = new StartScreen(this, 0, "Start Screen");
 		// allow the jpanel to get focus,
 		// which allows for event listeners to work
 		setPreferredSize(new Dimension(500, 600));
@@ -51,11 +45,6 @@ public class Scene extends JPanel implements ActionListener {
 		
 		
 	}// end paintComponenet
-	
-	// getLevelList method
-	public ArrayList<Level> getLevelList() {
-		return levelList;
-	}// end getLevelList
 	
 	// getCurrentLevel method
 	public Level getCurrentLevel() {
